@@ -6,6 +6,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
+## [0.2.4] — 2026-04-23
+
+Authentication for CI publishes moved from OIDC trusted publishing to a granular npm automation token with bypass-2FA, stored as the `NPM_TOKEN` GitHub Actions secret. Still ships with `--provenance`, so the SLSA attestation is still signed via OIDC and published to Sigstore — only the final PUT to the npm registry uses the token. OIDC trusted publishing failed repeatedly with a 404 on PUT even when Sigstore and provenance signing worked; root cause unclear, tracked for follow-up.
+
 ## [0.2.3] — 2026-04-23
 
 Same functional content as 0.2.0–0.2.2. The `environment:` gate was removed from the release workflow, and the Environment field cleared from the npm trusted-publisher record, after an OIDC claim-propagation quirk blocked the v0.2.1 and v0.2.2 publish attempts despite the trusted publisher being correctly configured otherwise. Release still flows through GitHub Actions OIDC and ships with a signed provenance attestation — the reviewer-gate on the `npm-publish` environment is the only control that's gone. We'll reinstate it once we understand how to get the environment claim through reliably (see `DECISIONS.md`).
