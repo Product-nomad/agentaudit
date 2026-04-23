@@ -251,7 +251,7 @@ async function main(): Promise<void> {
   }
   if (args.version) {
     // Kept simple — avoids needing to read package.json at runtime.
-    process.stdout.write("agentaudit 0.2.4\n");
+    process.stdout.write("agentaudit 0.2.5\n");
     process.exit(0);
   }
 

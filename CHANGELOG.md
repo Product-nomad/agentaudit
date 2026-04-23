@@ -6,6 +6,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
+## [0.2.5] — 2026-04-23
+
+### Fixed
+- Added missing `repository`, `homepage`, and `bugs` fields to `package.json`. Their absence was the root cause of all five previous release-pipeline failures: npm's provenance validator requires `package.json` to declare the same repository URL that the OIDC-signed SLSA attestation vouches for. With the field missing, validation returned 422 (visible now), reported as 404 through the OIDC auth path (misleading earlier). This single fix likely also unblocks OIDC trusted publishing — we may revert to tokenless auth in a follow-up.
+
 ## [0.2.4] — 2026-04-23
 
 Authentication for CI publishes moved from OIDC trusted publishing to a granular npm automation token with bypass-2FA, stored as the `NPM_TOKEN` GitHub Actions secret. Still ships with `--provenance`, so the SLSA attestation is still signed via OIDC and published to Sigstore — only the final PUT to the npm registry uses the token. OIDC trusted publishing failed repeatedly with a 404 on PUT even when Sigstore and provenance signing worked; root cause unclear, tracked for follow-up.
