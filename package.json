@@ -1,0 +1,45 @@
+{
+  "name": "agentaudit",
+  "version": "0.1.0",
+  "description": "Security audit for local AI coding agent sessions (Claude Code, Cursor, Windsurf). Scans for leaked secrets, risky commands, and unsafe edits — all local, zero upload.",
+  "type": "module",
+  "bin": {
+    "agentaudit": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src",
+    "format": "biome format --write src",
+    "test": "npm run build && node --test --experimental-test-coverage --test-reporter=spec $(find dist -name '*.test.js')",
+    "check": "npm run typecheck && npm run lint && npm test",
+    "prepublishOnly": "npm run check"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "claude-code",
+    "cursor",
+    "windsurf",
+    "ai-coding",
+    "security",
+    "audit",
+    "secrets-scan",
+    "observability"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "2.4.13",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}
