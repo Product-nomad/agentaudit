@@ -31,6 +31,16 @@ npm link            # puts `agentaudit` on PATH
 
 Requires Node 22+. The package is published scoped as `@product-nomad/agentaudit`; the CLI binary is `agentaudit` either way.
 
+### Verifying the release
+
+Every release from v0.2.1 onwards is published from GitHub Actions via npm OIDC trusted publishing, with a signed provenance attestation linking the tarball to a specific commit and workflow run. To verify what you just installed:
+
+```sh
+npm audit signatures
+```
+
+Provenance records for each version are also visible on <https://www.npmjs.com/package/@product-nomad/agentaudit>.
+
 ## Usage
 
 ```sh
