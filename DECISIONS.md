@@ -2,6 +2,9 @@
 
 One paragraph per material decision, newest on top. Avoids re-litigating the same choice. Per §11 of `~/WAYS_OF_WORKING.md`.
 
+## 2026-04-23 — `report` reports tokens, not dollars
+The first pass of `agentaudit report` aggregates token counts (input, cache read/write, output, turns) but not dollar costs. *Why:* published pricing changes, vendor pricing is per-model and shifts between API / Claude Code subscription / enterprise, and a hardcoded dollar multiplier becomes stale synthetic-data (§2 of Ways of Working). When we add costing, it will read a pricing file that names its source and date, and default to "unknown" rather than guess. *Trade:* reporting loses the "you spent $X this week" headline for now. Acceptable.
+
 ## 2026-04-23 — Adopt PMI CPMAI as the delivery framework
 Adopted the PMI Cognitive Project Management for AI (CPMAI) methodology for project phasing and governance. Even though agentaudit is regex-based, not AI-based, the framework's gates (threat model before detection logic, evaluation before release, ongoing drift monitoring) map cleanly. README now declares current CPMAI phase. *Alternatives considered:* ad-hoc / "ship when tests pass". *Why rejected:* no gate for ethics, no drift story, no explicit value metrics.
 

@@ -6,6 +6,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
+### Added
+- `agentaudit report` subcommand: per-project, per-model, and top-session token-usage rollup over local sessions. Text and JSON output. Streaming aggregation with bounded memory; concurrency cap shared with the audit path.
+- `--top <n>` option controls the top-sessions list length (default 10).
+
+### Changed
+- CLI help reflects both `audit` and `report` paths; tagline updated from "security audit" to "local governance for AI coding agent sessions" — covers both commands.
+
 ## [0.1.0] — 2026-04-23
 
 ### Added

@@ -2,8 +2,10 @@
 import { scanPaths } from "./engine.js";
 import { discoverSessions } from "./parser.js";
 import { renderJson, renderText } from "./report.js";
+import { renderUsageJson, renderUsageText } from "./report-usage.js";
 import { DEFAULT_RULES } from "./rules/index.js";
 import type { Severity } from "./types.js";
+import { analyzePaths } from "./usage.js";
 
 interface ParsedArgs {
   command: string;
@@ -12,22 +14,25 @@ interface ParsedArgs {
   noColor: boolean;
   minSeverity: Severity;
   groupBy: "session" | "rule";
+  topSessions: number;
   help: boolean;
   version: boolean;
 }
 
-const USAGE = `agentaudit — security audit for local AI coding agent sessions
+const USAGE = `agentaudit — local governance for AI coding agent sessions
 
 Usage:
-  agentaudit audit [paths...]   scan session transcripts for findings
-  agentaudit rules              list available rules
+  agentaudit audit [paths...]   scan session transcripts for security findings
+  agentaudit report [paths...]  token / project / model usage report
+  agentaudit rules              list available audit rules
   agentaudit --help             show this help
 
-Options (for audit):
+Options:
   --json                        emit machine-readable JSON
-  --no-color                    disable ANSI colour in text output
-  --min <severity>              info|low|medium|high|critical (default: info)
-  --group-by <session|rule>     grouping for text output (default: session)
+  --no-color                    disable ANSI colour in text output (audit only)
+  --min <severity>              info|low|medium|high|critical (audit, default: info)
+  --group-by <session|rule>     grouping for text output (audit, default: session)
+  --top <n>                     top-N sessions to list (report, default: 10)
 
 If no paths are given, scans ~/.claude/projects/**/*.jsonl.
 `;
@@ -40,6 +45,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     noColor: false,
     minSeverity: "info",
     groupBy: "session",
+    topSessions: 10,
     help: false,
     version: false,
   };
@@ -93,6 +99,15 @@ function parseArgs(argv: string[]): ParsedArgs {
         out.groupBy = v;
         break;
       }
+      case "--top": {
+        const v = rest[++i];
+        const n = Number(v);
+        if (!Number.isFinite(n) || n < 1) {
+          throw new Error("--top requires a positive integer");
+        }
+        out.topSessions = Math.floor(n);
+        break;
+      }
       default:
         if (a.startsWith("-")) throw new Error(`unknown option: ${a}`);
         out.paths.push(a);
@@ -134,6 +149,23 @@ async function runAudit(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
+async function runReport(args: ParsedArgs): Promise<number> {
+  const paths = args.paths.length ? args.paths : await discoverSessions();
+  if (!paths.length) {
+    process.stderr.write(
+      "No session files found. Pass paths explicitly or ensure ~/.claude/projects exists.\n",
+    );
+    return 2;
+  }
+  const report = await analyzePaths(paths, {});
+  if (args.json) {
+    process.stdout.write(`${renderUsageJson(report)}\n`);
+  } else {
+    process.stdout.write(`${renderUsageText(report, { topSessions: args.topSessions })}\n`);
+  }
+  return 0;
+}
+
 function listRules(): number {
   const w = process.stdout;
   for (const r of DEFAULT_RULES) {
@@ -165,6 +197,9 @@ async function main(): Promise<void> {
   switch (args.command) {
     case "audit":
       code = await runAudit(args);
+      break;
+    case "report":
+      code = await runReport(args);
       break;
     case "rules":
       code = listRules();

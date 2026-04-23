@@ -32,7 +32,12 @@ agentaudit audit path/to/session.jsonl    # scan specific files
 agentaudit audit --min high               # only show high/critical
 agentaudit audit --json                   # machine-readable output
 agentaudit audit --group-by rule          # group by rule instead of session
-agentaudit rules                          # list all checks
+
+agentaudit report                         # per-project / per-model token rollup
+agentaudit report --top 5                 # top N sessions by output tokens
+agentaudit report --json                  # full UsageReport as JSON
+
+agentaudit rules                          # list all audit checks
 ```
 
 Exit code mirrors the highest severity found: `30` (critical), `20` (high), `10` (medium), `0` otherwise. Useful in a shell hook or cron:
