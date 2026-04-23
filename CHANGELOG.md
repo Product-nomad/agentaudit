@@ -6,6 +6,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
+## [0.2.3] — 2026-04-23
+
+Same functional content as 0.2.0–0.2.2. The `environment:` gate was removed from the release workflow, and the Environment field cleared from the npm trusted-publisher record, after an OIDC claim-propagation quirk blocked the v0.2.1 and v0.2.2 publish attempts despite the trusted publisher being correctly configured otherwise. Release still flows through GitHub Actions OIDC and ships with a signed provenance attestation — the reviewer-gate on the `npm-publish` environment is the only control that's gone. We'll reinstate it once we understand how to get the environment claim through reliably (see `DECISIONS.md`).
+
 ## [0.2.2] — 2026-04-23
 
 Identical artefact to 0.2.1 but retried through the OIDC pipeline after the npm trusted-publisher config was actually saved (the first attempt failed mid-publish because the trusted-publisher form was still in an unsaved state). v0.2.1's version number is burned on the Sigstore transparency log so we can't reuse it; this one exists purely to occupy the next number. Recommend `@product-nomad/agentaudit@0.2.2` as the first provenance-attested release to install.

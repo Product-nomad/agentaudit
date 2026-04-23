@@ -2,6 +2,10 @@
 
 One paragraph per material decision, newest on top. Avoids re-litigating the same choice. Per §11 of `~/WAYS_OF_WORKING.md`.
 
+## 2026-04-23 — Dropped environment gate from OIDC trusted publisher (temporary)
+
+The `npm-publish` GitHub Environment reviewer-gate was removed from both the release workflow and the npm trusted-publisher record after v0.2.1 and v0.2.2 publish attempts failed at the npm PUT with 404. OIDC and Sigstore signing both succeeded; only the npm-side match failed. Inspection of the Sigstore attestation (logIndex 1365480013 and prior) showed the workflow section carrying `ref`, `repository`, and `path` but **no `environment` field**. This suggests npm's trusted-publisher matcher receives no environment claim to compare against, so a non-empty Environment on the npm side never matches. *Alternatives considered:* an automation token with bypass-2FA. *Why rejected:* we already had OIDC working for the signing half; dropping the environment keeps OIDC for auth and preserves provenance. *Reinstatement criteria:* once we can verify the environment claim does round-trip to npm's matcher (likely requires an npm support ticket or doc update on their side), reintroduce the reviewer gate.
+
 ## 2026-04-23 — OIDC trusted publishing for npm releases
 
 Future releases go through a GitHub Actions workflow that uses OIDC to authenticate to npm — no long-lived tokens in GitHub secrets, no secrets on any developer machine, and every tarball ships with a signed provenance attestation linking it to a specific commit + workflow run. Users can verify with `npm audit signatures`. *Why:* this is a security tool; its own supply chain has to be defensible. *Trigger:* GitHub Release creation, not bare tag pushes, so publishing remains an intentional human act. *Tag-version guard:* the workflow refuses to publish if the git tag doesn't match `package.json` version — the class of mismatch that bit us between v0.2.0's first tag and its published artefact. *Alternatives considered:* npm automation token in a GitHub secret. *Why rejected:* same blast radius as a stolen laptop credential; OIDC removes the token entirely.

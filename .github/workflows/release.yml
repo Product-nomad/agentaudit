@@ -12,9 +12,6 @@ jobs:
   publish:
     name: Publish to npm with provenance
     runs-on: ubuntu-latest
-    environment:
-      name: npm-publish
-      url: https://www.npmjs.com/package/@product-nomad/agentaudit
     steps:
       - uses: actions/checkout@v6
 
