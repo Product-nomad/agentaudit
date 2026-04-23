@@ -3,6 +3,7 @@ import { scanPaths } from "./engine.js";
 import { filterScanResultBySince, filterUsageReportBySince } from "./filter.js";
 import { discoverSessions } from "./parser.js";
 import { renderJson, renderText } from "./report.js";
+import { renderUsageCsv } from "./report-csv.js";
 import { renderUsageJson, renderUsageText } from "./report-usage.js";
 import { DEFAULT_RULES } from "./rules/index.js";
 import { parseSince } from "./since.js";
@@ -10,10 +11,12 @@ import { compileTagger, defaultTagConfigPath, loadTagConfig, noopTagger } from "
 import type { Severity } from "./types.js";
 import { analyzePaths } from "./usage.js";
 
+type OutputFormat = "text" | "json" | "csv";
+
 interface ParsedArgs {
   command: string;
   paths: string[];
-  json: boolean;
+  format: OutputFormat;
   noColor: boolean;
   minSeverity: Severity;
   groupBy: "session" | "rule";
@@ -33,7 +36,9 @@ Usage:
   agentaudit --help             show this help
 
 Options:
-  --json                        emit machine-readable JSON
+  --json                        machine-readable JSON (alias for --format json)
+  --csv                         CSV for spreadsheets / invoicing (report only; alias for --format csv)
+  --format <text|json|csv>      output format (default: text; csv available for report only)
   --no-color                    disable ANSI colour in text output (audit only)
   --min <severity>              info|low|medium|high|critical (audit, default: info)
   --group-by <session|rule>     grouping for text output (audit, default: session)
@@ -48,7 +53,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   const out: ParsedArgs = {
     command: "",
     paths: [],
-    json: false,
+    format: "text",
     noColor: false,
     minSeverity: "info",
     groupBy: "session",
@@ -84,8 +89,19 @@ function parseArgs(argv: string[]): ParsedArgs {
         out.version = true;
         break;
       case "--json":
-        out.json = true;
+        out.format = "json";
         break;
+      case "--csv":
+        out.format = "csv";
+        break;
+      case "--format": {
+        const v = rest[++i];
+        if (v !== "text" && v !== "json" && v !== "csv") {
+          throw new Error("--format must be 'text', 'json', or 'csv'");
+        }
+        out.format = v;
+        break;
+      }
       case "--no-color":
         out.noColor = true;
         break;
@@ -152,7 +168,10 @@ async function runAudit(args: ParsedArgs): Promise<number> {
     result = filterScanResultBySince(result, args.since);
   }
 
-  if (args.json) {
+  if (args.format === "csv") {
+    throw new Error("--csv is not supported for audit; use --json for machine-readable output");
+  }
+  if (args.format === "json") {
     process.stdout.write(`${renderJson(result)}\n`);
   } else {
     process.stdout.write(
@@ -185,10 +204,15 @@ async function runReport(args: ParsedArgs): Promise<number> {
   if (args.since) {
     report = filterUsageReportBySince(report, args.since);
   }
-  if (args.json) {
-    process.stdout.write(`${renderUsageJson(report)}\n`);
-  } else {
-    process.stdout.write(`${renderUsageText(report, { topSessions: args.topSessions })}\n`);
+  switch (args.format) {
+    case "json":
+      process.stdout.write(`${renderUsageJson(report)}\n`);
+      break;
+    case "csv":
+      process.stdout.write(renderUsageCsv(report));
+      break;
+    default:
+      process.stdout.write(`${renderUsageText(report, { topSessions: args.topSessions })}\n`);
   }
   return 0;
 }

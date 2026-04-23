@@ -39,7 +39,11 @@ agentaudit audit --group-by rule          # group by rule instead of session
 
 agentaudit report                         # per-project / per-model token rollup
 agentaudit report --top 5                 # top N sessions by output tokens
+agentaudit report --since 7d              # only sessions active in the last 7 days
+agentaudit report --since 2026-04-01      # or an ISO date
+agentaudit report --tag-config clients.json  # group by client tag (see Billing below)
 agentaudit report --json                  # full UsageReport as JSON
+agentaudit report --csv                   # one row per session × model, invoice-ready
 
 agentaudit rules                          # list all audit checks
 ```

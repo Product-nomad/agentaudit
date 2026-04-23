@@ -6,6 +6,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
+### Added
+- `--since <duration|date>` filter on both `audit` and `report`. Accepts relative durations (`24h`, `7d`, `2w`, `30m`) and ISO-8601 dates. Sessions without timestamps are excluded (we can't verify their range).
+- Per-client tagging for `report`: a small JSON config maps session cwd patterns to client tags. Default location `~/.config/agentaudit/clients.json`; override with `--tag-config <path>`. Patterns are literal substrings, or `/regex/` when wrapped. Tagged sessions roll up in a new "by client" section.
+- CSV output for `report` via `--csv` or `--format csv`. One row per (session × model); columns suited for pivot-table analysis and invoice prep.
+- Unified `--format <text|json|csv>` option; `--json` and `--csv` retained as aliases.
+
 ### Changed
 - Minimum Node bumped from 20 to 22. Node 20 reaches EOL on 2026-04-30, and its `--experimental-test-coverage` reporter crashes on our test output. CI matrix simplified to a single Node 22 job.
 
