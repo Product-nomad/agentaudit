@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "build:prod": "rm -rf dist && tsc -p tsconfig.build.json",
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
     "typecheck": "tsc --noEmit",
@@ -22,7 +23,8 @@
     "test": "npm run build && node --test --experimental-test-coverage --test-reporter=spec $(find dist -name '*.test.js')",
     "check": "npm run typecheck && npm run lint && npm test",
     "prepare": "lefthook install 2>/dev/null || true",
-    "prepublishOnly": "npm run check"
+    "prepublishOnly": "npm run check",
+    "prepack": "npm run build:prod"
   },
   "engines": {
     "node": ">=22"
