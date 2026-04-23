@@ -18,15 +18,18 @@ AI coding agents happily run `curl | sudo bash`, write to `~/.ssh/authorized_key
 ## Install
 
 ```sh
-# From source (until published)
-git clone <repo>
+# From npm (recommended)
+npm install -g @product-nomad/agentaudit
+agentaudit --version
+
+# Or from source
+git clone https://github.com/Product-nomad/agentaudit.git
 cd agentaudit
-npm install
-npm run build
-npm link            # optional: puts `agentaudit` on PATH
+npm ci && npm run build
+npm link            # puts `agentaudit` on PATH
 ```
 
-Requires Node 22+.
+Requires Node 22+. The package is published scoped as `@product-nomad/agentaudit`; the CLI binary is `agentaudit` either way.
 
 ## Usage
 
