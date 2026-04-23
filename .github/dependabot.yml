@@ -5,6 +5,15 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    ignore:
+      # @types/node major tracks the Node runtime major we support.
+      # Bump it manually when engines.node moves, not on Dependabot's clock.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # TypeScript majors deserve a considered migration (new strict checks
+      # surface real bugs). Keep Dependabot on minor/patch only.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       dev-dependencies:
         dependency-type: "development"
