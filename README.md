@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Product-nomad/agentaudit/actions/workflows/ci.yml/badge.svg)](https://github.com/Product-nomad/agentaudit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Node: ≥20](https://img.shields.io/badge/node-%E2%89%A520-green.svg)](./package.json)
+[![Node: ≥22](https://img.shields.io/badge/node-%E2%89%A522-green.svg)](./package.json)
 
 **Local governance for AI coding agent sessions.** Scans Claude Code session transcripts for leaked secrets, risky shell commands, unsafe file edits, and hook bypasses — and reports per-project / per-model token usage. All locally, nothing uploaded.
 
@@ -26,7 +26,7 @@ npm run build
 npm link            # optional: puts `agentaudit` on PATH
 ```
 
-Requires Node 20+.
+Requires Node 22+.
 
 ## Usage
 

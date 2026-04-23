@@ -6,6 +6,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
+### Changed
+- Minimum Node bumped from 20 to 22. Node 20 reaches EOL on 2026-04-30, and its `--experimental-test-coverage` reporter crashes on our test output. CI matrix simplified to a single Node 22 job.
+
 ## [0.1.0] — 2026-04-23
 
 Initial public release.
