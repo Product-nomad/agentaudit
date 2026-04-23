@@ -79,13 +79,35 @@ Findings may contain excerpts of prompts or command strings — don't paste `--j
 - **Self-matching.** Rules that look for flag strings will match commands whose *data* contains those strings (e.g. `node -e 'const re = /--no-verify/'`). We suppress the common interpreter-eval case; the long tail is a known gap.
 - **Transcript fidelity.** We parse Anthropic's Claude Code JSONL format as observed in late April 2026. The schema is private API and can change.
 
+## Billing / per-client reports
+
+If you're a freelancer or consultant using Claude Code across multiple client projects, tag sessions by cwd with a small JSON file:
+
+```json
+{
+  "clients": [
+    { "pattern": "/home/me/clients/acme",  "name": "acme" },
+    { "pattern": "/home/me/clients/beta",  "name": "beta" },
+    { "pattern": "/personal/",              "name": "personal" }
+  ]
+}
+```
+
+Save as `~/.config/agentaudit/clients.json` (default) or pass `--tag-config path/to/file.json`. Patterns are literal substrings unless wrapped in `/.../` (then parsed as a regex; first match wins).
+
+Then:
+- `agentaudit report --since 2026-04-01` → monthly-close token totals by client.
+- `agentaudit report --csv > april.csv` → one row per session × model, ready for a pivot table.
+
+`agentaudit` reports token counts, not dollars. Per-session dollar values need current pricing; see `DECISIONS.md` for the reasoning and the planned pricing-file support.
+
 ## Roadmap
 
-- Billing/project-rollup companion command (`report` → tag sessions by project, export per-client token/$ summaries).
+- Dollar-cost estimation via a dated, sourced `pricing.json` (next up).
 - Cursor / Windsurf session format adapters.
-- `--since <duration>` filter for weekly/daily audits.
 - Custom rules via a small plugin interface (rules are plain objects — already pluggable internally).
 - HTML report output for weekly review.
+- Golden red-team fixture set for Phase V metric #2.
 
 ## Governance
 
