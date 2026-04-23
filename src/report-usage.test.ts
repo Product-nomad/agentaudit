@@ -47,6 +47,7 @@ describe("renderUsageText", () => {
           turns: 8,
         },
       },
+      byClient: [],
       sessionsScanned: 2,
       eventsScanned: 20,
     };
@@ -63,6 +64,7 @@ describe("renderUsageText", () => {
     const report: UsageReport = {
       sessions: [session({})],
       byProject: [],
+      byClient: [],
       total: { input: 1, cacheCreation: 0, cacheRead: 0, output: 1, turns: 1 },
       byModel: {},
       sessionsScanned: 1,
@@ -79,6 +81,7 @@ describe("renderUsageJson", () => {
     const report: UsageReport = {
       sessions: [],
       byProject: [],
+      byClient: [],
       total: { input: 10, cacheCreation: 0, cacheRead: 0, output: 5, turns: 2 },
       byModel: {},
       sessionsScanned: 0,

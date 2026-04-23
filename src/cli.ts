@@ -6,6 +6,7 @@ import { renderJson, renderText } from "./report.js";
 import { renderUsageJson, renderUsageText } from "./report-usage.js";
 import { DEFAULT_RULES } from "./rules/index.js";
 import { parseSince } from "./since.js";
+import { compileTagger, defaultTagConfigPath, loadTagConfig, noopTagger } from "./tagger.js";
 import type { Severity } from "./types.js";
 import { analyzePaths } from "./usage.js";
 
@@ -18,6 +19,7 @@ interface ParsedArgs {
   groupBy: "session" | "rule";
   topSessions: number;
   since?: Date;
+  tagConfig?: string;
   help: boolean;
   version: boolean;
 }
@@ -37,6 +39,7 @@ Options:
   --group-by <session|rule>     grouping for text output (audit, default: session)
   --top <n>                     top-N sessions to list (report, default: 10)
   --since <duration|date>       limit to sessions active on/after (e.g. 7d, 24h, 2026-04-01)
+  --tag-config <path>           client tag config JSON (report only; default: ~/.config/agentaudit/clients.json)
 
 If no paths are given, scans ~/.claude/projects/**/*.jsonl.
 `;
@@ -118,6 +121,12 @@ function parseArgs(argv: string[]): ParsedArgs {
         out.since = parseSince(v);
         break;
       }
+      case "--tag-config": {
+        const v = rest[++i];
+        if (!v) throw new Error("--tag-config requires a path");
+        out.tagConfig = v;
+        break;
+      }
       default:
         if (a.startsWith("-")) throw new Error(`unknown option: ${a}`);
         out.paths.push(a);
@@ -171,7 +180,8 @@ async function runReport(args: ParsedArgs): Promise<number> {
     );
     return 2;
   }
-  let report = await analyzePaths(paths, {});
+  const tagger = await buildTagger(args.tagConfig);
+  let report = await analyzePaths(paths, { tagger });
   if (args.since) {
     report = filterUsageReportBySince(report, args.since);
   }
@@ -181,6 +191,17 @@ async function runReport(args: ParsedArgs): Promise<number> {
     process.stdout.write(`${renderUsageText(report, { topSessions: args.topSessions })}\n`);
   }
   return 0;
+}
+
+async function buildTagger(explicitPath: string | undefined) {
+  // Explicit path: fail loudly if missing / invalid. Default path: tolerate absence.
+  if (explicitPath) {
+    const cfg = await loadTagConfig(explicitPath);
+    if (!cfg) throw new Error(`--tag-config: file not found: ${explicitPath}`);
+    return compileTagger(cfg);
+  }
+  const cfg = await loadTagConfig(defaultTagConfigPath());
+  return cfg ? compileTagger(cfg) : noopTagger;
 }
 
 function listRules(): number {

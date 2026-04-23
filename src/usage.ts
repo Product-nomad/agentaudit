@@ -1,4 +1,5 @@
 import { streamEvents } from "./parser.js";
+import { noopTagger, type Tagger } from "./tagger.js";
 import type { RawEvent, Usage } from "./types.js";
 
 export interface TokenUsage {
@@ -18,6 +19,8 @@ export interface SessionUsage {
   eventCount: number;
   total: TokenUsage;
   byModel: Record<string, TokenUsage>;
+  /** Client tag applied by the configured tagger, if any. */
+  tag?: string;
   readError?: true;
 }
 
@@ -28,9 +31,17 @@ export interface ProjectRollup {
   byModel: Record<string, TokenUsage>;
 }
 
+export interface ClientRollup {
+  tag: string;
+  sessions: SessionUsage[];
+  total: TokenUsage;
+  byModel: Record<string, TokenUsage>;
+}
+
 export interface UsageReport {
   sessions: SessionUsage[];
   byProject: ProjectRollup[];
+  byClient: ClientRollup[];
   total: TokenUsage;
   byModel: Record<string, TokenUsage>;
   sessionsScanned: number;
@@ -39,6 +50,7 @@ export interface UsageReport {
 
 export interface AnalyzeOptions {
   concurrency?: number;
+  tagger?: Tagger;
 }
 
 const UNKNOWN_CWD = "(unknown)";
@@ -93,7 +105,10 @@ function enrichMeta(usage: SessionUsage, event: RawEvent): void {
  * Stream a session and produce its per-model / total token usage.
  * Memory footprint is independent of session size.
  */
-export async function analyzeSession(path: string): Promise<SessionUsage> {
+export async function analyzeSession(
+  path: string,
+  tagger: Tagger = noopTagger,
+): Promise<SessionUsage> {
   const usage: SessionUsage = {
     path,
     sessionId: "",
@@ -118,6 +133,8 @@ export async function analyzeSession(path: string): Promise<SessionUsage> {
   }
 
   if (!usage.sessionId) usage.sessionId = inferSessionIdFromPath(path);
+  const tag = tagger({ path: usage.path, cwd: usage.cwd });
+  if (tag) usage.tag = tag;
   return usage;
 }
 
@@ -143,11 +160,34 @@ export function rollupByProject(sessions: SessionUsage[]): ProjectRollup[] {
   return [...byCwd.values()].sort((a, b) => b.total.output - a.total.output);
 }
 
+/**
+ * Group sessions by their tag (applied by a Tagger). Sessions with no tag
+ * are omitted from the rollup entirely — they remain in sessions/byProject.
+ */
+export function rollupByClient(sessions: SessionUsage[]): ClientRollup[] {
+  const byTag = new Map<string, ClientRollup>();
+  for (const s of sessions) {
+    if (!s.tag) continue;
+    let entry = byTag.get(s.tag);
+    if (!entry) {
+      entry = { tag: s.tag, sessions: [], total: zeroUsage(), byModel: {} };
+      byTag.set(s.tag, entry);
+    }
+    entry.sessions.push(s);
+    addTokens(entry.total, s.total);
+    for (const [model, tokens] of Object.entries(s.byModel)) {
+      addTokens(ensureModelBucket(entry.byModel, model), tokens);
+    }
+  }
+  return [...byTag.values()].sort((a, b) => b.total.output - a.total.output);
+}
+
 export async function analyzePaths(
   paths: string[],
   opts: AnalyzeOptions = {},
 ): Promise<UsageReport> {
   const concurrency = Math.max(1, opts.concurrency ?? DEFAULT_CONCURRENCY);
+  const tagger = opts.tagger ?? noopTagger;
   const sessions: SessionUsage[] = new Array(paths.length);
   let next = 0;
 
@@ -155,7 +195,7 @@ export async function analyzePaths(
     while (true) {
       const i = next++;
       if (i >= paths.length) return;
-      sessions[i] = await analyzeSession(paths[i]);
+      sessions[i] = await analyzeSession(paths[i], tagger);
     }
   }
 
@@ -175,6 +215,7 @@ export async function analyzePaths(
   return {
     sessions,
     byProject: rollupByProject(sessions),
+    byClient: rollupByClient(sessions),
     total,
     byModel,
     sessionsScanned: paths.length,

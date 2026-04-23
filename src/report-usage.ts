@@ -1,4 +1,10 @@
-import type { ProjectRollup, SessionUsage, TokenUsage, UsageReport } from "./usage.js";
+import type {
+  ClientRollup,
+  ProjectRollup,
+  SessionUsage,
+  TokenUsage,
+  UsageReport,
+} from "./usage.js";
 
 export interface UsageRenderOptions {
   topSessions?: number;
@@ -21,6 +27,10 @@ function sortProjects(projects: ProjectRollup[]): ProjectRollup[] {
   return [...projects].sort((a, b) => b.total.output - a.total.output);
 }
 
+function sortClients(clients: ClientRollup[]): ClientRollup[] {
+  return [...clients].sort((a, b) => b.total.output - a.total.output);
+}
+
 function sortSessionsByOutput(sessions: SessionUsage[]): SessionUsage[] {
   return [...sessions].sort((a, b) => b.total.output - a.total.output);
 }
@@ -34,6 +44,15 @@ export function renderUsageText(report: UsageReport, opts: UsageRenderOptions = 
   );
   lines.push(`total  ${fmtUsage(report.total)}`);
   lines.push("");
+
+  if (report.byClient.length) {
+    lines.push("by client (sorted by output tokens):");
+    for (const c of sortClients(report.byClient)) {
+      lines.push(`  ${c.tag}  [${c.sessions.length} session${c.sessions.length === 1 ? "" : "s"}]`);
+      lines.push(`    ${fmtUsage(c.total)}`);
+    }
+    lines.push("");
+  }
 
   if (report.byProject.length) {
     lines.push("by project (sorted by output tokens):");

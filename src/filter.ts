@@ -60,11 +60,38 @@ export function filterUsageReportBySince(report: UsageReport, cutoff: Date): Usa
   return {
     sessions: keptSessions,
     byProject: rollupByProjectPreservingSort(keptSessions, report.byProject),
+    byClient: rollupByClientFromSessions(keptSessions),
     total: aggregateTotal(keptSessions),
     byModel: aggregateByModel(keptSessions),
     sessionsScanned: keptSessions.length,
     eventsScanned: keptSessions.reduce((n, s) => n + s.eventCount, 0),
   };
+}
+
+function rollupByClientFromSessions(sessions: SessionUsage[]) {
+  const byTag = new Map<
+    string,
+    {
+      tag: string;
+      sessions: SessionUsage[];
+      total: TokenUsage;
+      byModel: Record<string, TokenUsage>;
+    }
+  >();
+  for (const s of sessions) {
+    if (!s.tag) continue;
+    let entry = byTag.get(s.tag);
+    if (!entry) {
+      entry = { tag: s.tag, sessions: [], total: zeroUsage(), byModel: {} };
+      byTag.set(s.tag, entry);
+    }
+    entry.sessions.push(s);
+    addTokens(entry.total, s.total);
+    for (const [model, tokens] of Object.entries(s.byModel)) {
+      addTokens(bucket(entry.byModel, model), tokens);
+    }
+  }
+  return [...byTag.values()].sort((a, b) => b.total.output - a.total.output);
 }
 
 function rollupByProjectPreservingSort(

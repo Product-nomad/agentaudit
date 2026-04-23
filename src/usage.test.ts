@@ -129,7 +129,7 @@ describe("rollupByProject", () => {
       assistantTurn("claude-haiku-4-5", { input_tokens: 1, output_tokens: 1 }),
     ]);
 
-    const sessions = await Promise.all([a, b, c].map(analyzeSession));
+    const sessions = await Promise.all([a, b, c].map((p) => analyzeSession(p)));
     const projects = rollupByProject(sessions);
 
     assert.equal(projects.length, 2);
