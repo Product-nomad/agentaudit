@@ -1,6 +1,6 @@
 {
   "name": "@product-nomad/agentaudit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Security audit for local AI coding agent sessions (Claude Code, Cursor, Windsurf). Scans for leaked secrets, risky commands, and unsafe edits — all local, zero upload.",
   "type": "module",
   "bin": {

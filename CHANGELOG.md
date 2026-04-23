@@ -6,6 +6,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
+## [0.2.2] — 2026-04-23
+
+Identical artefact to 0.2.1 but retried through the OIDC pipeline after the npm trusted-publisher config was actually saved (the first attempt failed mid-publish because the trusted-publisher form was still in an unsaved state). v0.2.1's version number is burned on the Sigstore transparency log so we can't reuse it; this one exists purely to occupy the next number. Recommend `@product-nomad/agentaudit@0.2.2` as the first provenance-attested release to install.
+
 ## [0.2.1] — 2026-04-23
 
 First release cut through the OIDC trusted-publishing pipeline. No functional change from 0.2.0 for end users; this version ships with a verifiable provenance attestation.
