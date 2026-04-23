@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import { scanPaths } from "./engine.js";
+import { filterScanResultBySince, filterUsageReportBySince } from "./filter.js";
 import { discoverSessions } from "./parser.js";
 import { renderJson, renderText } from "./report.js";
 import { renderUsageJson, renderUsageText } from "./report-usage.js";
 import { DEFAULT_RULES } from "./rules/index.js";
+import { parseSince } from "./since.js";
 import type { Severity } from "./types.js";
 import { analyzePaths } from "./usage.js";
 
@@ -15,6 +17,7 @@ interface ParsedArgs {
   minSeverity: Severity;
   groupBy: "session" | "rule";
   topSessions: number;
+  since?: Date;
   help: boolean;
   version: boolean;
 }
@@ -33,6 +36,7 @@ Options:
   --min <severity>              info|low|medium|high|critical (audit, default: info)
   --group-by <session|rule>     grouping for text output (audit, default: session)
   --top <n>                     top-N sessions to list (report, default: 10)
+  --since <duration|date>       limit to sessions active on/after (e.g. 7d, 24h, 2026-04-01)
 
 If no paths are given, scans ~/.claude/projects/**/*.jsonl.
 `;
@@ -108,6 +112,12 @@ function parseArgs(argv: string[]): ParsedArgs {
         out.topSessions = Math.floor(n);
         break;
       }
+      case "--since": {
+        const v = rest[++i];
+        if (!v) throw new Error("--since requires a value");
+        out.since = parseSince(v);
+        break;
+      }
       default:
         if (a.startsWith("-")) throw new Error(`unknown option: ${a}`);
         out.paths.push(a);
@@ -127,7 +137,11 @@ async function runAudit(args: ParsedArgs): Promise<number> {
     return 2;
   }
 
-  const result = await scanPaths(paths, { rules: DEFAULT_RULES });
+  let result = await scanPaths(paths, { rules: DEFAULT_RULES });
+
+  if (args.since) {
+    result = filterScanResultBySince(result, args.since);
+  }
 
   if (args.json) {
     process.stdout.write(`${renderJson(result)}\n`);
@@ -157,7 +171,10 @@ async function runReport(args: ParsedArgs): Promise<number> {
     );
     return 2;
   }
-  const report = await analyzePaths(paths, {});
+  let report = await analyzePaths(paths, {});
+  if (args.since) {
+    report = filterUsageReportBySince(report, args.since);
+  }
   if (args.json) {
     process.stdout.write(`${renderUsageJson(report)}\n`);
   } else {
