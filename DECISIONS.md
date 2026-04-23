@@ -2,6 +2,10 @@
 
 One paragraph per material decision, newest on top. Avoids re-litigating the same choice. Per §11 of `~/WAYS_OF_WORKING.md`.
 
+## 2026-04-23 — OIDC trusted publishing for npm releases
+
+Future releases go through a GitHub Actions workflow that uses OIDC to authenticate to npm — no long-lived tokens in GitHub secrets, no secrets on any developer machine, and every tarball ships with a signed provenance attestation linking it to a specific commit + workflow run. Users can verify with `npm audit signatures`. *Why:* this is a security tool; its own supply chain has to be defensible. *Trigger:* GitHub Release creation, not bare tag pushes, so publishing remains an intentional human act. *Tag-version guard:* the workflow refuses to publish if the git tag doesn't match `package.json` version — the class of mismatch that bit us between v0.2.0's first tag and its published artefact. *Alternatives considered:* npm automation token in a GitHub secret. *Why rejected:* same blast radius as a stolen laptop credential; OIDC removes the token entirely.
+
 ## 2026-04-23 — `report` reports tokens, not dollars
 The first pass of `agentaudit report` aggregates token counts (input, cache read/write, output, turns) but not dollar costs. *Why:* published pricing changes, vendor pricing is per-model and shifts between API / Claude Code subscription / enterprise, and a hardcoded dollar multiplier becomes stale synthetic-data (§2 of Ways of Working). When we add costing, it will read a pricing file that names its source and date, and default to "unknown" rather than guess. *Trade:* reporting loses the "you spent $X this week" headline for now. Acceptable.
 

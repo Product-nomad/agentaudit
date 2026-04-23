@@ -6,6 +6,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
+### Added
+- OIDC trusted-publishing workflow (`.github/workflows/release.yml`): on every GitHub Release, CI publishes to npm with `--provenance`, using GitHub's OIDC token rather than a long-lived npm token. Users can verify the artefact with `npm audit signatures`.
+- `publishConfig.provenance: true` in `package.json` — makes provenance the default for any publish from now on (CI or manual).
+- Tag / package.json version-mismatch guard in the release workflow. The class of error that forced two `v0.2.0` tag moves during initial publish can't recur silently.
+
 ## [0.2.0] — 2026-04-23
 
 The billing wedge. Closes the consultant/freelancer workflow: filter by time window, tag sessions by client, export invoice-ready CSV.

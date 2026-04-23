@@ -11,6 +11,10 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc",
     "build:prod": "rm -rf dist && tsc -p tsconfig.build.json",
