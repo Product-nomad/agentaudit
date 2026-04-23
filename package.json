@@ -21,6 +21,7 @@
     "format": "biome format --write src",
     "test": "npm run build && node --test --experimental-test-coverage --test-reporter=spec $(find dist -name '*.test.js')",
     "check": "npm run typecheck && npm run lint && npm test",
+    "prepare": "lefthook install 2>/dev/null || true",
     "prepublishOnly": "npm run check"
   },
   "engines": {
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.13",
     "@types/node": "^22.0.0",
+    "lefthook": "2.1.6",
     "typescript": "^5.5.0"
   }
 }

@@ -1,9 +1,13 @@
 # agentaudit
 
-**Security audit for local AI coding agent sessions.** Scans Claude Code session transcripts for leaked secrets, risky shell commands, unsafe file edits, and hook bypasses — all locally, nothing uploaded.
+[![CI](https://github.com/Product-nomad/agentaudit/actions/workflows/ci.yml/badge.svg)](https://github.com/Product-nomad/agentaudit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Node: ≥20](https://img.shields.io/badge/node-%E2%89%A520-green.svg)](./package.json)
 
-> v0.1 — pre-release. Claude Code support today; Cursor / Windsurf adapters next.
-> **CPMAI phase V — Evaluation.** Detection logic implemented (Phase IV); tests + real-session validation in progress; not yet operationalised. See [Governance](#governance) below.
+**Local governance for AI coding agent sessions.** Scans Claude Code session transcripts for leaked secrets, risky shell commands, unsafe file edits, and hook bypasses — and reports per-project / per-model token usage. All locally, nothing uploaded.
+
+> v0.1 — initial public release. Claude Code support today; Cursor / Windsurf adapters next.
+> **CPMAI phase V → VI.** Detection logic and usage aggregation implemented; tests + real-session validation complete; transitioning to operationalisation (release + drift monitoring). See [Governance](#governance) below.
 
 ## Why
 

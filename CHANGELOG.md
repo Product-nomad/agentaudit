@@ -6,16 +6,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
 
 ## [Unreleased]
 
-### Added
-- `agentaudit report` subcommand: per-project, per-model, and top-session token-usage rollup over local sessions. Text and JSON output. Streaming aggregation with bounded memory; concurrency cap shared with the audit path.
-- `--top <n>` option controls the top-sessions list length (default 10).
-
-### Changed
-- CLI help reflects both `audit` and `report` paths; tagline updated from "security audit" to "local governance for AI coding agent sessions" — covers both commands.
-
 ## [0.1.0] — 2026-04-23
 
-### Added
+Initial public release.
+
+### Added — `audit` command
 - Streaming parser for Claude Code session JSONL (`src/parser.ts`).
 - Rule engine with per-rule and per-session error isolation (`src/engine.ts`), bounded-memory streaming, configurable concurrency, and a finding cap.
 - Five rule families:
@@ -25,14 +20,24 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [Semantic Versioning]
   - `fs.sensitive-path-write` — 15 paths (critical–medium)
   - `git.hook-bypass` (medium)
 - Interpreter-eval suppression (`src/shell.ts`) to cut false positives from `node -e` / `python -c` commands whose content contains flag strings.
-- CLI (`src/cli.ts`) with `audit` and `rules` subcommands, `--json`, `--min`, `--group-by` options, and severity-mapped exit codes.
-- 91 unit tests with native `node --test` + `--experimental-test-coverage`. Line coverage 99.2%.
+- CLI `audit` subcommand with `--json`, `--min`, `--group-by`; severity-mapped exit codes (0/10/20/30).
+
+### Added — `report` command
+- Streaming usage aggregator (`src/usage.ts`): per-session, per-model, per-project (cwd) token totals.
+- `report` subcommand with `--json` and `--top N` options.
+- Token-count output only; dollar costing deferred (see `DECISIONS.md`).
+
+### Added — tooling & governance
+- 102 unit tests with native `node --test` + `--experimental-test-coverage`. Line coverage ≥ 99%.
 - ReDoS performance test — 15k adversarial input completes under 100ms.
-- Biome 2.4.13 as single lint+format tool; `typecheck`, `lint`, `format`, `check` scripts.
-- Governance artefacts: `THREAT_MODEL.md`, `DECISIONS.md`, README section with CPMAI phase marker.
+- Biome 2.4.13 as single lint+format tool.
+- lefthook pre-commit hook running `typecheck`, `lint`, `test`.
+- GitHub Actions CI across Node 20 + 22.
+- Dependabot weekly updates for npm and actions.
+- Governance artefacts: `THREAT_MODEL.md`, `SECURITY.md`, `DECISIONS.md`, CPMAI phase marker in README.
 
 ### Known gaps
-- No release or operationalisation yet (Phase VI pending).
 - Golden red-team fixture set not yet built — Phase V value metric #2 unmeasured.
 - Cursor / Windsurf session adapters not implemented.
-- No drift monitoring (planned for Phase VI).
+- Dollar-cost estimation gated on a sourced pricing file (see `DECISIONS.md`).
+- Drift monitoring documented but not yet operationalised.
