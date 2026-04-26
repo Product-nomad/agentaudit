@@ -81,7 +81,7 @@ Initial public release.
 - lefthook pre-commit hook running `typecheck`, `lint`, `test`.
 - GitHub Actions CI across Node 20 + 22.
 - Dependabot weekly updates for npm and actions.
-- Governance artefacts: `THREAT_MODEL.md`, `SECURITY.md`, `DECISIONS.md`, CPMAI phase marker in README.
+- Governance artefacts: threat model, security policy, decision log, and a phase/status marker in README.
 
 ### Known gaps
 - Golden red-team fixture set not yet built — Phase V value metric #2 unmeasured.

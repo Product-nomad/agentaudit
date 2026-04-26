@@ -1,7 +1,7 @@
 # agentaudit — STATE
 
 **Goal**: A local, zero-upload auditor for AI coding agent session transcripts. Surfaces leaked secrets, risky shell commands, sensitive-path writes, and hook bypasses; reports per-project / per-model token usage. Built so individual developers and consultants can sanity-check what their agent did, without sending session contents off-machine.
-**CPMAI phase**: V (Evaluation) → VI (Operationalisation). Detection + usage aggregation shipped; golden-set validation and drift monitoring still to wire.
+**Maturity**: detection + usage aggregation shipped; release pipeline + signed provenance shipped; golden-set validation and drift monitoring still to wire.
 **Status**: active, published as `@product-nomad/agentaudit` v0.2.5 on npm.
 **Last touched**: 2026-04-26.
 

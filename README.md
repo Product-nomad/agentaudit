@@ -8,7 +8,7 @@
 
 > **Today:** Claude Code only. Cursor and Windsurf session-format adapters are on the roadmap but not yet shipped — see [Roadmap](#roadmap).
 > **Released:** v0.2.5 on npm with signed provenance via OIDC trusted publishing. Verify with `npm audit signatures`.
-> **CPMAI phase: V (Evaluation) → VI (Operationalisation).** Detection logic + usage aggregation implemented; release pipeline + provenance shipped; golden-set validation and drift monitoring still in flight. Full posture in [Governance](#governance).
+> **Status:** detection logic and per-project / per-model token reporting are shipped; release pipeline and signed provenance are shipped; a red-team golden set and drift monitoring are still in flight. Full posture in [Governance](#governance).
 
 ## Why
 
@@ -113,7 +113,7 @@ Then:
 - `agentaudit report --since 2026-04-01` → monthly-close token totals by client.
 - `agentaudit report --csv > april.csv` → one row per session × model, ready for a pivot table.
 
-`agentaudit` reports token counts, not dollars. Per-session dollar values need current pricing; see `DECISIONS.md` for the reasoning and the planned pricing-file support.
+`agentaudit` reports token counts, not dollars. Per-session dollar values need current pricing; see the decision log for the reasoning and the planned pricing-file support.
 
 ## Roadmap
 
@@ -125,22 +125,19 @@ Then:
 
 ## Governance
 
-This project follows the working principles at [`~/WAYS_OF_WORKING.md`](../../WAYS_OF_WORKING.md) and the PMI CPMAI methodology. Below is the current governance posture.
+Where the project is, what's committed to, and what would make us archive it.
 
-### CPMAI phase: V (Evaluation) → VI (Operationalisation)
+### Status
 
-| Phase | Status | Artefact |
-|---|---|---|
-| I. Business Understanding | ✅ complete | [`THREAT_MODEL.md`](./THREAT_MODEL.md) |
-| II. Data Understanding | ✅ complete | Session JSONL schema reverse-engineered; documented in `src/types.ts` |
-| III. Data Preparation | ✅ complete | Streaming parser (`src/parser.ts`), tolerant of malformed lines |
-| IV. Model Development | ✅ complete | 5 rule families, 13 bash patterns, 15 sensitive paths, 15 secret patterns |
-| V. Model Evaluation | 🟡 in progress | 91 unit tests + real-session validation against 17 local sessions / 925 events. Golden red-team fixture set (value metric #2) still to build. |
-| VI. Model Operationalization | 🟡 in progress | v0.2.5 published on npm with OIDC trusted publishing + signed provenance; CI on every push. Drift monitoring + scheduled golden-set runs not yet wired. |
+| Status | What |
+|---|---|
+| ✅ Shipped | Threat model + scope. Streaming JSONL parser (tolerant of malformed lines, documented in `src/types.ts`). Five rule families: secrets-in-prompt, secrets-in-tool-result, risky-bash, sensitive-path-edit, hook-bypass — 13 bash patterns, 15 sensitive paths, 15 secret patterns. 91 unit tests. Per-project / per-model token usage with CSV export. v0.2.5 published on npm with OIDC trusted publishing and signed provenance. CI on every push. |
+| 🟡 In flight | Real-session validation against the developer's own corpus (17 sessions / 925 events as of 2026-04-25). Golden red-team fixture set (planted-secret + risky-command scenarios with known-true labels). Drift monitoring (rule-coverage / FP-rate / scan-time, scheduled weekly against a frozen corpus). |
+| ⏳ Not started | Cursor and Windsurf session-format adapters. Pricing-file support to convert tokens to dollar estimates. Custom rules via plugin interface. |
 
-### Value metrics (Phase III contract)
+### Outcome metrics
 
-Set before advancing past Phase III; reviewed at each subsequent gate.
+Set early, reviewed before each release.
 
 1. **Precision on real sessions.** At minimum 95% true-positive rate in the `medium+` bucket on the developer's own session history. Current: 2/2 (100%, n=2).
 2. **Coverage of planted-secret golden set.** Detects ≥ 80% of a planned red-team fixture set of realistic leak scenarios. Current: **not yet measured** (golden set to be built in Phase V).
@@ -149,20 +146,20 @@ Set before advancing past Phase III; reviewed at each subsequent gate.
 ### Ethical posture
 
 - **Privacy by default.** Local-only. No network. No telemetry. Reads only under `~/.claude/projects/` by default.
-- **Transparency.** OSS (MIT). Known gaps listed in `THREAT_MODEL.md`.
+- **Transparency.** OSS (MIT). Known gaps listed in the threat model in this repo.
 - **Data minimisation.** Output redacts secret values (`ghp_…abcd`) and shows only the matching line for long commands.
 - **Non-harm.** We refuse to add: telemetry, content phone-home, surveillance of other users' sessions, or anything that would enable covert monitoring.
 
-### Drift monitoring (planned for Phase VI)
+### Drift monitoring (planned)
 
 - **Rule coverage drift** — matches per 1k events, tracked weekly against the scanned session corpus.
 - **False-positive rate** — tracked against a labelled sample; alert if it exceeds 5%.
 - **Schema drift** — alerted if new `type` values appear in session JSONL that we don't recognise (Anthropic's private schema can evolve).
 - **Scan-time drift** — alerted if wall-clock-per-event regresses > 2×.
 
-### Governance log
+### Decision log
 
-Material decisions are recorded in [`DECISIONS.md`](./DECISIONS.md) (one paragraph per decision, dated). Change history is in [`CHANGELOG.md`](./CHANGELOG.md) — current release v0.2.5.
+Material decisions are recorded in this repo's decision log (one paragraph per decision, dated). Change history sits alongside it — current release v0.2.5.
 
 ### Sunset criteria
 
@@ -170,7 +167,7 @@ Archive this project if any of these become true:
 
 - Anthropic (or the Cursor / Windsurf vendors, once their adapters land) ships a first-party local-audit tool that covers the same surface (secrets, risky shell, sensitive-path writes, hook bypasses) with comparable transparency.
 - The session-transcript schemas converge on a stable public format and the rule set becomes a thin wrapper around that — at which point the rules belong upstream, not in a sidecar.
-- Maintenance burden of tracking schema drift across three vendors exceeds the value delivered to users (measured against the value metrics above).
+- Maintenance burden of tracking schema drift across three vendors exceeds the value delivered to users (measured against the outcome metrics above).
 - The threat model assumption — local-only, single-user box, agent is trusted but its data is not — stops holding for the configurations users actually run.
 
 ## License
