@@ -4,10 +4,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node: ≥22](https://img.shields.io/badge/node-%E2%89%A522-green.svg)](./package.json)
 
-**Local governance for AI coding agent sessions.** Scans Claude Code session transcripts for leaked secrets, risky shell commands, unsafe file edits, and hook bypasses — and reports per-project / per-model token usage. All locally, nothing uploaded.
+**See what your AI coding agent actually did.** Local audit of Claude Code session transcripts: leaked secrets, risky shell commands, unsafe file edits, hook bypasses — plus per-project / per-model token usage. Runs entirely on your machine, nothing uploaded.
 
-> v0.1 — initial public release. Claude Code support today; Cursor / Windsurf adapters next.
-> **CPMAI phase V → VI.** Detection logic and usage aggregation implemented; tests + real-session validation complete; transitioning to operationalisation (release + drift monitoring). See [Governance](#governance) below.
+> **Today:** Claude Code only. Cursor and Windsurf session-format adapters are on the roadmap but not yet shipped — see [Roadmap](#roadmap).
+> **Released:** v0.2.5 on npm with signed provenance via OIDC trusted publishing. Verify with `npm audit signatures`.
+> **CPMAI phase: V (Evaluation) → VI (Operationalisation).** Detection logic + usage aggregation implemented; release pipeline + provenance shipped; golden-set validation and drift monitoring still in flight. Full posture in [Governance](#governance).
 
 ## Why
 
@@ -126,7 +127,7 @@ Then:
 
 This project follows the working principles at [`~/WAYS_OF_WORKING.md`](../../WAYS_OF_WORKING.md) and the PMI CPMAI methodology. Below is the current governance posture.
 
-### CPMAI phase: V (Evaluation)
+### CPMAI phase: V (Evaluation) → VI (Operationalisation)
 
 | Phase | Status | Artefact |
 |---|---|---|
@@ -134,8 +135,8 @@ This project follows the working principles at [`~/WAYS_OF_WORKING.md`](../../WA
 | II. Data Understanding | ✅ complete | Session JSONL schema reverse-engineered; documented in `src/types.ts` |
 | III. Data Preparation | ✅ complete | Streaming parser (`src/parser.ts`), tolerant of malformed lines |
 | IV. Model Development | ✅ complete | 5 rule families, 13 bash patterns, 15 sensitive paths, 15 secret patterns |
-| V. Model Evaluation | 🟡 in progress | 91 unit tests, real-session validation against 17 local sessions / 925 events |
-| VI. Model Operationalization | ⏳ not started | No release, no monitoring, no CI |
+| V. Model Evaluation | 🟡 in progress | 91 unit tests + real-session validation against 17 local sessions / 925 events. Golden red-team fixture set (value metric #2) still to build. |
+| VI. Model Operationalization | 🟡 in progress | v0.2.5 published on npm with OIDC trusted publishing + signed provenance; CI on every push. Drift monitoring + scheduled golden-set runs not yet wired. |
 
 ### Value metrics (Phase III contract)
 
@@ -161,7 +162,16 @@ Set before advancing past Phase III; reviewed at each subsequent gate.
 
 ### Governance log
 
-Material decisions are recorded in [`DECISIONS.md`](./DECISIONS.md) (one paragraph per decision, dated). Change history is in [`CHANGELOG.md`](./CHANGELOG.md) once we cut the first tagged release.
+Material decisions are recorded in [`DECISIONS.md`](./DECISIONS.md) (one paragraph per decision, dated). Change history is in [`CHANGELOG.md`](./CHANGELOG.md) — current release v0.2.5.
+
+### Sunset criteria
+
+Archive this project if any of these become true:
+
+- Anthropic (or the Cursor / Windsurf vendors, once their adapters land) ships a first-party local-audit tool that covers the same surface (secrets, risky shell, sensitive-path writes, hook bypasses) with comparable transparency.
+- The session-transcript schemas converge on a stable public format and the rule set becomes a thin wrapper around that — at which point the rules belong upstream, not in a sidecar.
+- Maintenance burden of tracking schema drift across three vendors exceeds the value delivered to users (measured against the value metrics above).
+- The threat model assumption — local-only, single-user box, agent is trusted but its data is not — stops holding for the configurations users actually run.
 
 ## License
 
